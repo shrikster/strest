@@ -4,7 +4,7 @@ test('Compute Request Object', () => {
     const obj = {
         notConnected:'first value',
         connected:'connected Value(first.value)',
-        faked:'connected Fake({{name.lastName}})',
+        faked:'connected Fake(name.lastName)',
     };
     const responses = {first:{value:'sucess'}};
     const res = computeRequestObject(obj,responses);
