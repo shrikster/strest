@@ -33,6 +33,7 @@ export const validateSchema = (testSettings: object[]) => {
     if(test.error === null) {
       proofedSettings.push(fileSetting);
     } else {
+      console.log(test.error.message);
       errors.push(test.error.message);
     }
   });

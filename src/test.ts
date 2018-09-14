@@ -4,6 +4,10 @@ import * as ora from 'ora';
 import axios, { AxiosResponse } from 'axios';
 import * as qs from 'qs';
 import * as faker from 'faker';
+import * as FormData from 'form-data';
+import * as fs from 'fs';
+
+
 import { colorizeMain, colorizeCustomRed } from './handler';
 import { requestObjectSchema as requestObjectSchema } from './configSchema';
 import { config } from './configLoader';
@@ -99,6 +103,7 @@ export const computeRequestObject = (obj: Object, r: any) => {
   // Find everything that matches Value(someValueString)
   const regValue = /Value\((.*?)\)/g
   const regFake = /Fake\((.*?)\)/g
+  const regFile = /File\((.*?)\)/g
   const innerReg = /\((.*?)\)/
 
   let item: any;
@@ -149,6 +154,21 @@ export const computeRequestObject = (obj: Object, r: any) => {
             try {
               let fakerString = faker.fake(`{{${innerMatch[1]}}}`);
               (<any>obj)[item] = (<any>obj)[item].replace(m, fakerString);
+            } catch(e) {
+              return e;
+            }
+          }
+        });
+      }
+      // find all File(...) strings in any item
+      if(regFile.test(val) === true) {
+        let outterMatch = val.match(regFile);
+        outterMatch.forEach((m: string) => {
+          const innerMatch = m.match(innerReg);
+          if(innerMatch !== null) {
+            try {
+              const fileStream = fs.createReadStream(innerMatch[1]);
+              (<any>obj)[item] = (<any>obj)[item].replace(m, fileStream);
             } catch(e) {
               return e;
             }
@@ -333,7 +353,7 @@ const validateResponse = (validateSchema: any, dataToProof: any) => {
  * @param printAll If true, all response information will be logged in the console
  */
 const performRequest = async (requestObject: requestObjectSchema, requestName: string, printAll: boolean) => {
-
+  
   const error = computeRequestObject(requestObject, requestReponses);
   if(error !== null) {
     return { isError: true, message: error, code: 1}
@@ -351,10 +371,8 @@ const performRequest = async (requestObject: requestObjectSchema, requestName: s
 
   let axiosObject: AxiosObject = {};
   // optional keys 
-  
   axiosObject.url = requestObject.url;
   axiosObject.method = requestObject.method;
-
   // headers 
   if(typeof requestObject.headers !== 'undefined') {
     axiosObject.headers = requestObject.headers;
@@ -369,6 +387,16 @@ const performRequest = async (requestObject: requestObjectSchema, requestName: s
     // raw data
     if(typeof requestObject.data.raw !== 'undefined') {
       axiosObject.data  = requestObject.data.raw;
+    }
+    // form data
+    if(typeof requestObject.data.form !== 'undefined') {
+      const form = new FormData();
+      Object.entries(requestObject.data.form).forEach(([key, value]) => {
+        console.log(`${key} ${value}`);
+        form.append(key, value);//, { filename : 'sss.kpj' });
+      });
+      axiosObject.data  = form;
+      axiosObject.headers = form.getHeaders();
     }
     // params
     if(typeof requestObject.data.params !== 'undefined') {
@@ -410,6 +438,7 @@ const performRequest = async (requestObject: requestObjectSchema, requestName: s
     return {isError: false, message: null, code: 0}
   
   } catch(e) {
+    console.error(e);
     return { isError: true, message: e, code: 1}
   }
   
