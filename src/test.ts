@@ -4,6 +4,10 @@ import * as ora from 'ora';
 import axios, { AxiosResponse } from 'axios';
 import * as qs from 'qs';
 import * as faker from 'faker';
+import * as FormData from 'form-data';
+import * as fs from 'fs';
+
+
 import { colorizeMain, colorizeCustomRed } from './handler';
 import { requestObjectSchema as requestObjectSchema } from './configSchema';
 import { config } from './configLoader';
@@ -55,15 +59,15 @@ export const performTests = async (testObjects: object[], printAll: boolean) =>Â
 
               waitSpinner.stop();
             }
-    
+
             const spinner = ora(`Testing ${chalk.bold(colorizeMain(requestName))}`).start();
             const startTime = new Date().getTime();
-            
+
             let error = await performRequest(val, requestName, printAll);
-            
+
             const endTime = new Date().getTime();
             const execTime = (endTime - startTime) / 1000;
-    
+
             if(error.isError === true) {
               spinner.clear();
               console.log();
@@ -116,8 +120,9 @@ export const computeRequestObject = (obj: Object, r: any) => {
   const regValue = /Value\((.*?)\)/g
   const regFake = /Fake\((.*?)\)/g
   const regEnv = /Env\((.*?)\)/g
+  const regFile = /File\((.*?)\)/g
   const innerReg = /\((.*?)\)/
-  
+
   let item: any;
   for(item in obj)Â {
     let val = (<any>obj)[item];
@@ -186,6 +191,21 @@ export const computeRequestObject = (obj: Object, r: any) => {
           }
         });
       }
+        // find all File(...) strings in any item
+        if(regFile.test(val) === true) {
+            let outterMatch = val.match(regFile);
+            outterMatch.forEach((m: string) => {
+                const innerMatch = m.match(innerReg);
+                if(innerMatch !== null) {
+                    try {
+                        const fileStream = fs.createReadStream(innerMatch[1]);
+                        (<any>obj)[item] = (<any>obj)[item].replace(m, fileStream);
+                    } catch(e) {
+                        return e;
+                    }
+                }
+            });
+        }
     }
   }
   return null;
@@ -400,6 +420,16 @@ const performRequest = async (requestObject: requestObjectSchema, requestName: s
     // raw data
     if(typeof requestObject.data.raw !== 'undefined') {
       axiosObject.data  = requestObject.data.raw;
+    }
+    // form data
+    if(typeof requestObject.data.form !== 'undefined') {
+      const form = new FormData();
+      Object.entries(requestObject.data.form).forEach(([key, value]) => {
+        console.log(`${key} ${value}`);
+        form.append(key, value);//, { filename : 'sss.kpj' });
+      });
+      axiosObject.data  = form;
+      axiosObject.headers = form.getHeaders();
     }
     // params
     if(typeof requestObject.data.params !== 'undefined') {
