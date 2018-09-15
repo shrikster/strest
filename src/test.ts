@@ -6,6 +6,7 @@ import * as qs from 'qs';
 import * as faker from 'faker';
 import * as FormData from 'form-data';
 import * as fs from 'fs';
+import * as path from 'path';
 
 
 import { colorizeMain, colorizeCustomRed } from './handler';
@@ -167,8 +168,8 @@ export const computeRequestObject = (obj: Object, r: any) => {
           const innerMatch = m.match(innerReg);
           if(innerMatch !== null) {
             try {
-              const fileStream = fs.createReadStream(innerMatch[1]);
-              (<any>obj)[item] = (<any>obj)[item].replace(m, fileStream);
+              const fileStream = fs.createReadStream(path.resolve(innerMatch[1]));
+              (<any>obj)[item] = fileStream;
             } catch(e) {
               return e;
             }
@@ -390,10 +391,14 @@ const performRequest = async (requestObject: requestObjectSchema, requestName: s
     }
     // form data
     if(typeof requestObject.data.form !== 'undefined') {
-      const form = new FormData();
+      const form: FormData = new FormData();
       Object.entries(requestObject.data.form).forEach(([key, value]) => {
-        console.log(`${key} ${value}`);
-        form.append(key, value);//, { filename : 'sss.kpj' });
+        if(value instanceof fs.ReadStream){
+          form.append(key, value, { filepath: value.path.toString()});
+        }
+        else{
+          form.append(key, value);
+        }
       });
       axiosObject.data  = form;
       axiosObject.headers = form.getHeaders();

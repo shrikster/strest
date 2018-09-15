@@ -8,10 +8,9 @@ const dataSchema = Joi.object().keys({
 }).min(1).max(2)
   .without('json', 'formUrlEncoded')
   .without('formUrlEncoded', 'json')
-  .without('json', 'raw')
-  .without('raw', 'json')
-  .without('form', 'json')
-  .without('json', 'form')
+  .without('json',['raw','form'])
+  .without('raw', ['json','form'])
+  .without('form',['json','row'])
   .without('formUrlEncoded', 'raw')
   .without('raw', 'formUrlEncoded')
 
@@ -20,8 +19,9 @@ const validateSchema = Joi.object().keys({
   raw: Joi.string().optional(),
   form: Joi.object().optional(),
 })
-  .without('json', 'raw')
-  .without('raw', 'json');
+  .without('json', ['raw','form'])
+  .without('raw', ['json','form'])
+  .without('form', ['raw','json']);
 
 const requestsSchema = Joi.object().keys({
   url: Joi.string().required(),
