@@ -190,17 +190,20 @@ Visit [Faker.js Documentation](http://marak.github.io/faker.js/) for more method
 ## Replacing values with predefined environment variables
 **Usage**
 ```yaml
-version: 1                            
+version: 1
 
-requests:                             
-  userRequest:                        
-    url: Env(MY_TEST_URL)/user   
-    method: GET                       
-    data:                             
+requests:
+  userRequest:
+    url: Env(MY_TEST_URL)/user
+    method: GET
+    data:
       params:
-        fromEnvironment: Env(MY_ENV_VAR)                         
+        fromEnvironment: Env(MY_ENV_VAR)
 
 ```
+
+## Sending files and form data
+Sending files and form data is easy. use form type in the data prop.
 
 ## Response Validation
 With **Strest** you can validate responses either by a specific value or by a `Type`. _[List of all valid Types](VALIDATION.md)_
