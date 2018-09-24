@@ -105,6 +105,7 @@ export const computeRequestObject = (obj: Object, r: any) => {
   const regValue = /Value\((.*?)\)/g
   const regFake = /Fake\((.*?)\)/g
   const regFile = /File\((.*?)\)/g
+  const regEnv = /Env\((.*?)\)/g
   const innerReg = /\((.*?)\)/
 
   let item: any;
@@ -170,6 +171,20 @@ export const computeRequestObject = (obj: Object, r: any) => {
             try {
               const fileStream = fs.createReadStream(path.resolve(innerMatch[1]));
               (<any>obj)[item] = fileStream;
+            } catch(e) {
+              return e;
+            }
+          }
+        });
+      }
+      // find all Env(...) strings in any item
+      if(regEnv.test(val) === true) {
+        let outterMatch = val.match(regEnv);
+        outterMatch.forEach((m: string) => {
+          const innerMatch = m.match(innerReg);
+          if(innerMatch !== null) {
+            try {
+              (<any>obj)[item] = (<any>obj)[item].replace(m, process.env[innerMatch[1]]);
             } catch(e) {
               return e;
             }
@@ -443,7 +458,6 @@ const performRequest = async (requestObject: requestObjectSchema, requestName: s
     return {isError: false, message: null, code: 0}
   
   } catch(e) {
-    console.error(e);
     return { isError: true, message: e, code: 1}
   }
   
