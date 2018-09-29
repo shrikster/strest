@@ -120,10 +120,10 @@ export const computeRequestObject = (obj: Object, r: any) => {
   // Find everything that matches Value(someValueString)
   const regValue = /Value\((.*?)\)/g
   const regFake = /Fake\((.*?)\)/g
-  const regEnv = /Env\((.*?)\)/g
   const regFile = /File\((.*?)\)/g
+  const regEnv = /Env\((.*?)\)/g
   const innerReg = /\((.*?)\)/
-
+  
   let item: any;
   for(item in obj) {
     let val = (<any>obj)[item];
@@ -178,6 +178,21 @@ export const computeRequestObject = (obj: Object, r: any) => {
           }
         });
       }
+      // find all File(...) strings in any item
+      if(regFile.test(val) === true) {
+        let outterMatch = val.match(regFile);
+        outterMatch.forEach((m: string) => {
+          const innerMatch = m.match(innerReg);
+          if(innerMatch !== null) {
+            try {
+              const fileStream = fs.createReadStream(path.resolve(innerMatch[1]));
+              (<any>obj)[item] = fileStream;
+            } catch (e) {
+              return e;
+            }
+          }
+        });
+      }
       // find all Env(...) strings in any item
       if (regEnv.test(val) === true) {
         let outterMatch = val.match(regEnv);
@@ -192,21 +207,6 @@ export const computeRequestObject = (obj: Object, r: any) => {
           }
         });
       }
-        // find all File(...) strings in any item
-        if(regFile.test(val) === true) {
-            let outterMatch = val.match(regFile);
-            outterMatch.forEach((m: string) => {
-                const innerMatch = m.match(innerReg);
-                if(innerMatch !== null) {
-                    try {
-                        const fileStream = fs.createReadStream(innerMatch[1]);
-                        (<any>obj)[item] = (<any>obj)[item].replace(m, fileStream);
-                    } catch(e) {
-                        return e;
-                    }
-                }
-            });
-        }
     }
   }
   return null;
@@ -385,7 +385,7 @@ const validateResponse = (validateSchema: any, dataToProof: any) => {
  * @param printAll If true, all response information will be logged in the console
  */
 const performRequest = async (requestObject: requestObjectSchema, requestName: string, printAll: boolean) => {
-
+  
   const error = computeRequestObject(requestObject, requestReponses);
   if(error !== null) {
     return { isError: true, message: error, code: 1}
