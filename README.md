@@ -159,6 +159,7 @@ requests:
     ...
 
   authNeeded:
+    delay: 2000 # Wait 2 seconds for token to become valid
     ...
     headers:
       Authorization: Bearer Value(login.token)
@@ -186,8 +187,24 @@ requests:
 ```
 Visit [Faker.js Documentation](http://marak.github.io/faker.js/) for more methods
 
+
 ## Sending files and form data
 Sending files and form data is easy. use form type in the data prop.
+
+## Replacing values with predefined environment variables
+**Usage**
+```yaml
+version: 1                            
+
+requests:                             
+  userRequest:                        
+    url: Env(MY_TEST_URL)/user   
+    method: GET                       
+    data:                             
+      params:
+        fromEnvironment: Env(MY_ENV_VAR)                         
+
+```
 
 ## Response Validation
 With **Strest** you can validate responses either by a specific value or by a `Type`. _[List of all valid Types](VALIDATION.md)_

@@ -29,7 +29,9 @@ const requestsSchema = Joi.object().keys({
   data: dataSchema.optional(),
   headers: Joi.object().optional(),
   validate: validateSchema.optional(),
-  log: Joi.boolean().optional()
+  log: Joi.boolean().optional(),
+  delay: Joi.number().optional(),
+  repeat: Joi.number().optional(),
 })
 
 
@@ -49,6 +51,7 @@ interface requestObjectDataSchema {
 }
 
 export interface requestObjectSchema {
+  delay: number,
   method: string,
   url: string,
   data: requestObjectDataSchema,

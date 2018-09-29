@@ -43,50 +43,66 @@ export const performTests = async (testObjects: object[], printAll: boolean) =>�
       for(let requestName in requests) {
     
         if(!abortBecauseTestFailed) {
-          
           const val = requests[requestName];
-  
-          const spinner = ora(`Testing ${chalk.bold(colorizeMain(requestName))}`).start();
-          const startTime = new Date().getTime();
-          
-          let error = await performRequest(val, requestName, printAll);
-          
-          const endTime = new Date().getTime();
-          const execTime = (endTime - startTime) / 1000;
-  
-          if(error.isError === true) {
-            spinner.clear();
-            console.log();
-            spinner.fail(colorizeCustomRed(`Testing ${chalk.bold(colorizeCustomRed(requestName))} failed (${chalk.bold(`${execTime.toString()}s`)}) \n\n${error.message}`))
-            // if one test failed, don't run others
-            abortBecauseTestFailed = true;
-            return error.code;
-          } else {
-            if(error.message !== null) {
-              // log the response info and data
-              const res: AxiosResponse<any> = error.message;
-              let parsedData = res.data;
-              if(typeof res.data === 'object') {
-                parsedData = JSON.stringify(res.data, null, 2);
-              }
 
-              let dataString = '';
-              if(parsedData != '') {
-                dataString = `\n\n${colorizeMain('Data')}: \n\n${chalk.hex(config.secondaryColor)(parsedData)}\n`;
-              } else {
-                dataString = `\n\n${colorizeMain('Data')}: No data received\n`;
-              }
+          let runTimes = 1;
+          if(typeof val.repeat !== 'undefined'){
+            runTimes = val.repeat;
+          }
+          for(let i = 0; i != runTimes; i++) {
+            // Delay for the specified number of milliseconds if given
+            if(typeof val.delay !== 'undefined') {
+              const waitSpinner = ora(`Waiting for ${chalk.bold(colorizeMain(val.delay))} milliseconds`).start();
 
-              spinner.succeed(
-                `Testing ${chalk.bold(colorizeMain(requestName))} succeeded (${chalk.bold(`${execTime.toString()}s`)})` +
-                `\n\n${colorizeMain('Status')}: ${res.status}`+
-                `\n${colorizeMain('Status Text')}: ${res.statusText}` +
-                `\n\n${colorizeMain('Headers')}: \n\n${chalk.hex(config.secondaryColor)(JSON.stringify(res.headers, null ,2))}` +
-                `${dataString}`
-              )
-            } else {
-              spinner.succeed(`Testing ${chalk.bold(colorizeMain(requestName))} succeeded (${chalk.bold(`${execTime.toString()}s`)})`)
+              await function() {
+                return new Promise(resolve => setTimeout(resolve, val.delay));
+              }();
+
+              waitSpinner.stop();
             }
+    
+            const spinner = ora(`Testing ${chalk.bold(colorizeMain(requestName))}`).start();
+            const startTime = new Date().getTime();
+            
+            let error = await performRequest(val, requestName, printAll);
+            
+            const endTime = new Date().getTime();
+            const execTime = (endTime - startTime) / 1000;
+    
+            if(error.isError === true) {
+              spinner.clear();
+              console.log();
+              spinner.fail(colorizeCustomRed(`Testing ${chalk.bold(colorizeCustomRed(requestName))} failed (${chalk.bold(`${execTime.toString()}s`)}) \n\n${error.message}`))
+              // if one test failed, don't run others
+              abortBecauseTestFailed = true;
+              return error.code;
+            } else {
+                if(error.message !== null) {
+                  // log the response info and data
+                  const res: AxiosResponse<any> = error.message;
+                  let parsedData = res.data;
+                  if(typeof res.data === 'object') {
+                    parsedData = JSON.stringify(res.data, null, 2);
+                  }
+
+                  let dataString = '';
+                  if(parsedData != '') {
+                    dataString = `\n\n${colorizeMain('Data')}: \n\n${chalk.hex(config.secondaryColor)(parsedData)}\n`;
+                  } else {
+                    dataString = `\n\n${colorizeMain('Data')}: No data received\n`;
+                  }
+
+                  spinner.succeed(
+                    `Testing ${chalk.bold(colorizeMain(requestName))} succeeded (${chalk.bold(`${execTime.toString()}s`)})` +
+                    `\n\n${colorizeMain('Status')}: ${res.status}`+
+                    `\n${colorizeMain('Status Text')}: ${res.statusText}` +
+                    `\n\n${colorizeMain('Headers')}: \n\n${chalk.hex(config.secondaryColor)(JSON.stringify(res.headers, null ,2))}` +
+                    `${dataString}`
+                  )
+                } else {
+                  spinner.succeed(`Testing ${chalk.bold(colorizeMain(requestName))} succeeded (${chalk.bold(`${execTime.toString()}s`)})`)
+                }
+              }
           }
     
         }
@@ -104,9 +120,13 @@ export const computeRequestObject = (obj: Object, r: any) => {
   // Find everything that matches Value(someValueString)
   const regValue = /Value\((.*?)\)/g
   const regFake = /Fake\((.*?)\)/g
+<<<<<<< HEAD
   const regFile = /File\((.*?)\)/g
+=======
+  const regEnv = /Env\((.*?)\)/g
+>>>>>>> 51167c9737a5641504604a40251e0925e128ce30
   const innerReg = /\((.*?)\)/
-
+  
   let item: any;
   for(item in obj) {
     let val = (<any>obj)[item];
@@ -161,6 +181,7 @@ export const computeRequestObject = (obj: Object, r: any) => {
           }
         });
       }
+<<<<<<< HEAD
       // find all File(...) strings in any item
       if(regFile.test(val) === true) {
         let outterMatch = val.match(regFile);
@@ -171,6 +192,17 @@ export const computeRequestObject = (obj: Object, r: any) => {
               const fileStream = fs.createReadStream(path.resolve(innerMatch[1]));
               (<any>obj)[item] = fileStream;
             } catch(e) {
+=======
+      // find all Env(...) strings in any item
+      if (regEnv.test(val) === true) {
+        let outterMatch = val.match(regEnv);
+        outterMatch.forEach((m: string) => {
+          const innerMatch = m.match(innerReg);
+          if (innerMatch !== null) {
+            try {
+              (<any>obj)[item] = (<any>obj)[item].replace(m, process.env[innerMatch[1]]);
+            } catch (e) {
+>>>>>>> 51167c9737a5641504604a40251e0925e128ce30
               return e;
             }
           }

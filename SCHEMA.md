@@ -14,6 +14,8 @@
       - [`json`](#validate)
       - [`form`](#validate)
     - [`log`](#log)
+    - [`delay`](#delay)
+    - [`repeat`](#repeat)
 
 
 # Specifications
@@ -70,6 +72,16 @@ somePostRequest:
 someGetRequest:
   url: ...
   method: GET
+```
+
+### `delay`
+If present, the execution of the request will be delayed by the specified number of milliseconds.
+```yaml
+# Example
+someRequest:
+  delay: 2000 # Wait 2 seconds before perfoming request
+  url: ...
+  method: ...
 ```
 
 ### `data`
@@ -143,6 +155,16 @@ someRequest:
     Authorization: Bearer Value(login.token)
     ...
 
+```
+### `repeat`
+The following example request will be executed 5 times in a row
+
+```yaml
+# Example
+someRequest:
+  url: ...
+  method: ...
+  repeat: 5
 ```
 
 ### `validate`
