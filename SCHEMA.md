@@ -2,28 +2,30 @@
 
 <!-- TOC depthFrom:2 -->
 
-- [`version` **_Required_**](#version-_required_)
-- [`variables`](#variables)
-- [`allowInsecure`](#allowinsecure)
-- [`requests` **_Required_**](#requests-_required_)
-    - [`request` **_At least one request is required_**](#request-_at-least-one-request-is-required_)
-        - [`url` **_Required_**](#url-_required_)
-        - [`method` **_Required_**](#method-_required_)
-        - [`if`](#if)
-        - [`delay`](#delay)
-        - [`data`](#data)
-            - [`json`](#json)
-            - [`raw`](#raw)
-            - [`params`](#params)
-        - [`headers`](#headers)
-        - [`auth`](#auth)
-          - [`basic`](#basic)
-        - [`validate`](#validate)
-            - [`raw`](#raw-1)
-            - [`json`](#json-1)
-            - [`code`](#code)
-            - [`jsonpath`](#jsonpath)
-        - [`log`](#log)
+- [How to write Test? The Schema](#how-to-write-test-the-schema)
+  - [`version` **_Required_**](#version-required)
+  - [`variables`](#variables)
+  - [`allowInsecure`](#allowinsecure)
+  - [`requests` **_Required_**](#requests-required)
+    - [`request` **_At least one request is required_**](#request-at-least-one-request-is-required)
+      - [`if`](#if)
+      - [`url` **_Required_**](#url-required)
+      - [`method` **_Required_**](#method-required)
+      - [`delay`](#delay)
+      - [`data`](#data)
+        - [`json`](#json)
+        - [`raw`](#raw)
+        - [`params`](#params)
+        - [`form`](#form)
+      - [`headers`](#headers)
+      - [`auth`](#auth)
+      - [`basic`](#basic)
+      - [`validate`](#validate)
+        - [`raw`](#raw-1)
+        - [`json`](#json-1)
+        - [`code`](#code)
+        - [`jsonpath`](#jsonpath)
+      - [`log`](#log)
 
 <!-- /TOC -->
 
@@ -215,6 +217,31 @@ someRequest:
     params: 
       name: testUser
       password: test123
+```
+
+##### `form`
+
+```yaml
+# Form data Example
+someRequest:
+  url: ...
+  method: ...
+  data:
+    form:
+        title: foo
+        body: bar
+        userId: 1
+
+# Form data with a file Example
+someRequest:
+  url: ...
+  method: ...
+  data:
+    form:
+        title: foo
+        body: bar
+        userId: 1
+        sampleFile: File(tests/strest.png)
 ```
 
 #### `headers`
