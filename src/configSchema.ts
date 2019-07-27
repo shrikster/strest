@@ -39,7 +39,10 @@ const queryStringSchema = Joi.object().keys({
 
 const paramsSchema = Joi.object().keys({
   name: Joi.string().required(),
-  value: Joi.string().required()
+  value: Joi.string().required(),
+  fileName: Joi.string().optional(),
+  contentType: Joi.string().optional(),
+  comment: Joi.string().optional()
 })
 
 const postDataSchema = Joi.object().keys({
@@ -140,6 +143,9 @@ interface cookiesObjectSchema {
 interface paramsObjectSchema {
   name: string,
   value: string,
+  fileName: string,
+  contentType: string,
+  comment: string,
 }
 interface postDataObjectSchema {
   mimeType: string,

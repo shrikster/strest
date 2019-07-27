@@ -3,9 +3,9 @@ requests:
   postwithfile:
     request:
       # url: https://postman-echo.com/post
-      # url: http://localhost:3000/post
+      url: http://localhost:3000/post
       # url: http://jkorpela.fi/cgi-bin/echoraw.cgi
-      url: http://httpbin.org/post
+      # url: http://httpbin.org/post
       method: POST
       postData:
         mimeType: multipart/form-data
@@ -17,11 +17,17 @@ requests:
           - name: userId
             value: "1"
           - name: avatar
-            value: <$ file("tests/strest.png") $>
+            value: tests/strest.png
+            fileName: "somename.pdf"
+            contentType: "image/jpeg"
           - name: avatar1
-            value: <$ file("tests/strest.png") $>
+            value: tests/strest.png
+            contentType: "image/jpeg"
+            comment: some comment 
     validate:
       - jsonpath: content.form.title
         expect: foo
       - jsonpath: content.files["avatar"]
+        type: [string]
+      - jsonpath: content.files["avatar1"]
         type: [string]

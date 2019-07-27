@@ -47,10 +47,6 @@ nunjucksEnv.addGlobal('Env', function (envi: string) {
   return environ;
 })
 
-nunjucksEnv.addGlobal('file', function (filePath: string)  {
-  const key = `sendFile:${path.resolve(filePath)}`;
-  return key;
-});
 /**
  * All Data that any request returns, will be stored here. After that it can be used in the following methods
  */
@@ -423,10 +419,14 @@ const performRequest = async (requestObject: requestsObjectSchema, requestName: 
       else{
         const form: FormData = new FormData();
         requestObject.request.postData.params.forEach(item=>{
-          if(item.value.startsWith('sendFile:')){
-            const filePath = item.value.replace('sendFile:','');
-            const fileStream = fs.createReadStream(filePath);
-            form.append(item.name, fileStream, { filepath:filePath });
+          if(item.contentType && item.contentType.length >0){
+            const filepath = path.resolve(item.value);
+            const fileStream = fs.createReadStream(filepath);
+            form.append(item.name, fileStream, { 
+              filepath, 
+              filename: item.fileName,
+              contentType: item.contentType
+            });
           }
           else{
             form.append(item.name, item.value);
